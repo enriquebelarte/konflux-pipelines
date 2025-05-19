@@ -1,0 +1,47 @@
+---
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: get-oc-versions 
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+spec:
+  description: >-
+    Tekton pipeline to get versions from different oc images..
+  params:
+    - name: rhcos_version
+      type: string
+    - name: remote_registry
+      type: string
+      default: quay.io/openshift-release-dev/ocp-release
+    - name: arch
+      type: string 
+  tasks:
+    - name: run-oc-cli 
+      params:
+        - name: RHCOS_VERSION
+          value: "$(params.rhcos_version)"
+        - name: ARCH
+          value: "$(params.arch)"
+        - name: REMOTE_REGISTRY
+          value: "$(params.remote_registry)"
+      taskSpec:
+        params:
+          - name: RHCOS_VERSION
+            type: string
+          - name: ARCH
+            type: string
+          - name: REMOTE_REGISTRY
+            type: string
+        steps:
+          - name: run-oc-cli
+            image: quay.io/openshift/origin-cli:4.12
+            script: |
+              #!/usr/bin/env sh
+              set -eo pipefail
+              echo "DRIVER TOOLKIT IMAGE for $(params.RHCOS_VERSION) is :"
+              /usr/bin/oc adm release info --image-for driver-toolkit "quay.io/openshift-release-dev/ocp-release:"$(params.RHCOS_VERSION)"-"$(params.ARCH)
+
+
