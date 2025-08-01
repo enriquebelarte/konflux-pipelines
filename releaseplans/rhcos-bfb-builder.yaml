@@ -7,7 +7,13 @@ metadata:
   name: rhcos-bfb-builder 
   namespace: rh-ecosystem-tenant
 spec:
-  application: rhcos-bfb-builder 
+  application: rhcos-bfb-builder
+  data:
+    mapping:
+      components:
+        - name: rhcos-bfb-builder
+          repository: quay.io/ebelarte/rhcos-bfb-builder
+          tags: ["{{ labels.IMAGE_TAG }}"]  
   tenantPipeline:
     pipelineRef:
       resolver: git
@@ -17,7 +23,10 @@ spec:
         - name: revision
           value: main
         - name: pathInRepo
-          value: pipelines/release-to-registry
+          value: pipelines/release-to-registry.yaml
+    params:
+      - name: released_version
+        value: "0.1"
     serviceAccountName: appstudio-pipeline
           
 

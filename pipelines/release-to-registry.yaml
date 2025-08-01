@@ -40,7 +40,8 @@ spec:
             type: string
         steps:
           - name: push-snapshot
-            image: quay.io/konflux-ci/release-service-utils:81c729dce4f5d09643757802700e3d4967f531bf9bda3ec626cd16806934e27e
+            #image: quay.io/konflux-ci/release-service-utils:81c729dce4f5d09643757802700e3d4967f531bf9bda3ec626cd16806934e27e
+            image: quay.io/fedora/fedora:42:aarch64
             script: |
               #!/usr/bin/env sh
               set -eo pipefail
