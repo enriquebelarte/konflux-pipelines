@@ -1,0 +1,59 @@
+---
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: release-to-external
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/tags: release
+spec:
+  description: >-
+    Tekton pipeline to release Konflux snapshot to an external registry
+  params:
+    - name: released_version
+      type: string
+    - name: snapshot
+      type: string
+    - name: remote_registry
+      type: string
+      default: quay.io/ebelarte/rhcos-bfb-builder
+  workspaces:
+    - name: release-workspace
+  tasks:
+    - name: push-snapshot-to-remote
+      params:
+        - name: RELEASED_VERSION
+          value: "$(params.released_version)"
+        - name: SNAPSHOT
+          value: "$(params.snapshot)"
+        - name: REMOTE_REGISTRY
+          value: "$(params.remote_registry)"
+      taskSpec:
+        params:
+          - name: RELEASED_VERSION
+            type: string
+          - name: SNAPSHOT
+            type: string
+          - name: REMOTE_REGISTRY
+            type: string
+        steps:
+          - name: push-snapshot
+            image: quay.io/konflux-ci/release-service-utils:81c729dce4f5d09643757802700e3d4967f531bf9bda3ec626cd16806934e27e
+            script: |
+              #!/usr/bin/env sh
+              set -eo pipefail
+
+              export DOCKER_CONFIG
+              echo $(params.RELEASED_VERSION)
+              sha_image=$(get-resource "snapshot" $(params.SNAPSHOT) | jq '.metadata.annotations' | jq -r '."build.appstudio.redhat.com/commit_sha"')
+              source_image=$(get-resource "snapshot" $(params.SNAPSHOT) | jq -r .spec.components[].containerImage | sed 's/@.*$//')
+              SRC_IMAGE="$source_image:$sha_image"
+              # A label IMAGE_TAG should be present in build pipeline
+              tag=$(skopeo inspect docker://$SRC_IMAGE | jq -r '.Labels."IMAGE_TAG"')
+              echo "Copying from $source_image to $(params.REMOTE_REGISTRY):$tag"
+              cosign copy "$SRC_IMAGE" "$(params.REMOTE_REGISTRY):$tag"
+      workspaces:
+        - name: data
+          workspace: release-workspace
