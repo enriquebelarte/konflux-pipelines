@@ -13,7 +13,7 @@ spec:
       components:
         - name: rhcos-bfb-builder
           repository: quay.io/ebelarte/rhcos-bfb-builder
-          tags: ["{{ labels.IMAGE_TAG }}","{{ git_sha }}"]  
+          tags: ["{{ labels.IMAGE_TAG }}","{{ git_sha }}","latest"]
   tenantPipeline:
     pipelineRef:
       resolver: git
