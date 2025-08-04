@@ -19,6 +19,10 @@ spec:
     - name: remote_registry
       type: string
       default: quay.io/ebelarte/rhcos-bfb-builder
+    - name: registry_secret
+      type: string
+      default: mysecret
+      description: Name of the secret containing registry credentials in user:password format
   workspaces:
     - name: release-workspace
   tasks:
@@ -30,6 +34,8 @@ spec:
           value: "$(params.snapshot)"
         - name: REMOTE_REGISTRY
           value: "$(params.remote_registry)"
+        - name: REGISTRY_SECRET
+          value: "$(params.registry_secret)"
       taskSpec:
         params:
           - name: RELEASED_VERSION
@@ -38,14 +44,34 @@ spec:
             type: string
           - name: REMOTE_REGISTRY
             type: string
+          - name: REGISTRY_SECRET
+            type: string
         steps:
           - name: push-snapshot
             image: quay.io/konflux-ci/release-service-utils:81c729dce4f5d09643757802700e3d4967f531bf9bda3ec626cd16806934e27e
+            env:
+              - name: REGISTRY_CREDENTIALS
+                valueFrom:
+                  secretKeyRef:
+                    name: "$(params.REGISTRY_SECRET)"
+                    key: credentials
             script: |
               #!/usr/bin/env sh
               set -eo pipefail
 
-              export DOCKER_CONFIG
+              # Configure registry authentication
+              export DOCKER_CONFIG=$(mktemp -d)
+              
+              # Extract username and password from the secret
+              REGISTRY_USER=$(echo "$REGISTRY_CREDENTIALS" | cut -d':' -f1)
+              REGISTRY_PASS=$(echo "$REGISTRY_CREDENTIALS" | cut -d':' -f2-)
+              
+              # Get registry hostname from remote registry parameter
+              REGISTRY_HOST=$(echo "$(params.REMOTE_REGISTRY)" | cut -d'/' -f1)
+              
+              # Create docker config for authentication
+              echo "{\"auths\":{\"$REGISTRY_HOST\":{\"auth\":\"$(echo -n "$REGISTRY_USER:$REGISTRY_PASS" | base64 -w 0)\"}}}" > "$DOCKER_CONFIG/config.json"
+
               echo $(params.RELEASED_VERSION)
               sha_image=$(get-resource "snapshot" $(params.SNAPSHOT) | jq '.metadata.annotations' | jq -r '."build.appstudio.redhat.com/commit_sha"')
               source_image=$(get-resource "snapshot" $(params.SNAPSHOT) | jq -r .spec.components[].containerImage | sed 's/@.*$//')
