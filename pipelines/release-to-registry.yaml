@@ -21,7 +21,7 @@ spec:
       default: quay.io/ebelarte/rhcos-bfb-builder
     - name: registry_secret
       type: string
-      default: mysecret
+      default: quay-ebelarte-secret
       description: Name of the secret containing registry credentials in user:password format
   workspaces:
     - name: release-workspace
