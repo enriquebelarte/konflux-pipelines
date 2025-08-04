@@ -80,6 +80,8 @@ spec:
               tag=$(skopeo inspect --override-arch arm64 docker://$SRC_IMAGE | jq -r '.Labels."IMAGE_TAG"')
               echo "Copying from $source_image to $(params.REMOTE_REGISTRY):$tag"
               cosign copy "$SRC_IMAGE" "$(params.REMOTE_REGISTRY):$tag"
+              cosign copy "$SRC_IMAGE" "$(params.REMOTE_REGISTRY):$sha_image"
+              cosign copy "$SRC_IMAGE" "$(params.REMOTE_REGISTRY):tp-latest"
       workspaces:
         - name: data
           workspace: release-workspace
