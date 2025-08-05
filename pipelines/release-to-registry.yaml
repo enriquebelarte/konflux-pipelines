@@ -18,10 +18,10 @@ spec:
       type: string
     - name: remote_registry
       type: string
-      default: quay.io/ebelarte/rhcos-bfb-builder
+      default: quay.io/repository/edge-infrastructure/rhcos-bfb 
     - name: registry_secret
       type: string
-      default: quay-ebelarte-secret
+      default: quay-rhcosbfb-secret 
       description: Name of the secret containing registry credentials in user:password format
   workspaces:
     - name: release-workspace
