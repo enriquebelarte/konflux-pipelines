@@ -18,7 +18,7 @@ spec:
       type: string
     - name: remote_registry
       type: string
-      default: quay.io/repository/edge-infrastructure/rhcos-bfb 
+      default: quay.io/edge-infrastructure/rhcos-bfb 
     - name: registry_secret
       type: string
       default: quay-rhcosbfb-secret 
