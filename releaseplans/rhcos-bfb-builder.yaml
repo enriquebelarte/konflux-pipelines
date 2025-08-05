@@ -12,7 +12,7 @@ spec:
     mapping:
       components:
         - name: rhcos-bfb-builder
-          repository: quay.io/ebelarte/rhcos-bfb-builder
+          repository: quay.io/edge-infrastructure/rhcos-bfb 
           tags: ["{{ labels.IMAGE_TAG }}","{{ git_sha }}","latest"]
   tenantPipeline:
     pipelineRef:
@@ -28,5 +28,3 @@ spec:
       - name: released_version
         value: "0.1"
     serviceAccountName: appstudio-pipeline
-          
-
