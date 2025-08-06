@@ -77,12 +77,10 @@ spec:
               source_image=$(get-resource "snapshot" $(params.SNAPSHOT) | jq -r .spec.components[].containerImage | sed 's/@.*$//')
               SRC_IMAGE="$source_image:$sha_image"
               # A label IMAGE_TAG should be present in build pipeline
-              tag=$(skopeo inspect --override-arch arm64 docker://$SRC_IMAGE | jq -r '.Labels."IMAGE_TAG"')
+              tag=$(skopeo inspect --override-arch arm64 docker://$SRC_IMAGE | jq -r '.Labels."rhcos.custom.tag"')
               echo "Copying from $source_image to $(params.REMOTE_REGISTRY):$tag"
-              cosign copy "$SRC_IMAGE" "$(params.REMOTE_REGISTRY):$tag"
+              cosign copy -f "$SRC_IMAGE" "$(params.REMOTE_REGISTRY):$tag"
               cosign copy "$SRC_IMAGE" "$(params.REMOTE_REGISTRY):$sha_image"
-              # Force tag for latest
-              cosign copy -f "$SRC_IMAGE" "$(params.REMOTE_REGISTRY):tp-latest"
       workspaces:
         - name: data
           workspace: release-workspace
